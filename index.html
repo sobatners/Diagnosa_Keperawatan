@@ -257,8 +257,8 @@ async function diagnose() {
   document.getElementById('loading').style.display = 'block';
 
   try {
-    // Menggunakan endpoint resmi Google Gemini API (Model v1.5 Flash yang cepat dan andal untuk teks klinis)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // FIX: Menggunakan jalur rute v1 (jalur stabil rilis produksi) bukan v1beta
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     const response = await fetch(url, {
       method: 'POST',
@@ -270,7 +270,7 @@ async function diagnose() {
           }]
         }],
         generationConfig: {
-          responseMimeType: "application/json"
+          responseMimeType: "application/json" // Memaksa AI mengembalikan struktur JSON terformat rapi
         }
       })
     });
@@ -283,8 +283,10 @@ async function diagnose() {
     const resData = await response.json();
     let rawText = resData.candidates[0].content.parts[0].text;
     
-    // Pembersihan jika model masih menyelipkan markdown block code
-    rawText = rawText.replace(/```json|```/g, '').trim();
+    // FIX: Membersihkan pembungkus blok markdown ```json secara aman jika AI tidak sengaja menyertakannya
+    if (rawText.includes("```")) {
+      rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
     
     const result = JSON.parse(rawText);
     renderResults(result);
