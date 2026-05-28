@@ -118,15 +118,15 @@
 
     <script>
         // --- KONFIGURASI SISTEM ---
-        // 1. Akun Login Sederhana (Bisa Anda ganti/tambah sesuai kebutuhan)
+        // 1. Akun Login Sederhana (Daftar Akun yang Diizinkan Masuk)
         const KREDENSI_USER = {
             "adminperawat": "sdki2026",
             "mahasiswa": "suksesners"
         };
 
         // 2. TOKEN API KEY GOOGLE GEMINI V1
-        // Taruh API Key unik Anda dari Google AI Studio di sini
-        const GEMINI_API_KEY = "AIzaSyBLnghfaaR6PHXv8HPPie8OXcV-ERUODtE"; 
+        // Dikosongkan agar aman dari sistem deteksi rahasia GitHub (Secret Scanning)
+        let GEMINI_API_KEY = ""; 
 
         // --- MANIPULASI DOM ---
         const loginSection = document.getElementById('login-section');
@@ -153,6 +153,18 @@
             const pass = passwordInput.value.trim();
 
             if (KREDENSI_USER[user] && KREDENSI_USER[user] === pass) {
+                
+                // POP-UP MEMINTA API KEY KEPADA USER SECARA DINAMIS
+                const inputKey = prompt("Masukkan API Key Google Gemini Anda untuk mengaktifkan AI:");
+                
+                if (!inputKey || inputKey.trim() === "") {
+                    alert("Gagal Masuk: API Key wajib diisi untuk menggunakan fitur Analisis AI.");
+                    return;
+                }
+                
+                // Menyimpan API Key sementara di memori halaman browser
+                GEMINI_API_KEY = inputKey.trim();
+                
                 loginSection.classList.add('hidden');
                 dashboardSection.classList.remove('hidden');
                 alert('Login Berhasil! Selamat Datang di CareDiagnose AI.');
@@ -167,6 +179,7 @@
             loginForm.reset();
             resultSection.classList.add('hidden');
             searchInput.value = '';
+            GEMINI_API_KEY = ""; // Hapus token dari memori demi keamanan saat logout
         });
 
         // --- FITUR HIT PENCARIAN AI GEMINI (VERSI PERBAIKAN & ANTI-ERROR) ---
@@ -210,7 +223,7 @@
                     })
                 });
 
-                // Cek jika respon dari Google error (misal API Key salah/diblokir)
+                // Cek jika respon dari Google error (misal API Key dinonaktifkan/salah ketik)
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(`Google API Error: ${errorData.error.message}`);
@@ -219,7 +232,7 @@
                 const data = await response.json();
                 
                 if (!data.candidates || data.candidates.length === 0) {
-                    throw new Error("Gemini tidak mengembalikan hasil analisis. Coba ubah kalimat gejala.");
+                    throw new Error("Gemini tidak mengembalikan hasil analisis. Coba ubah susunan kalimat gejala.");
                 }
 
                 let rawText = data.candidates[0].content.parts[0].text;
@@ -246,7 +259,7 @@
                 loading.classList.add('hidden');
                 
                 // Menampilkan pesan error spesifik agar tahu letak kesalahannya
-                alert(`Terjadi Kendala Sistem:\n${error.message}\n\nTips:\n1. Pastikan API Key di baris kode script sudah benar.\n2. Sangat direkomendasikan jalankan secara online dengan upload ke GitHub Pages agar tidak diblokir browser keamanan lokal.`);
+                alert(`Terjadi Kendala Sistem:\n${error.message}\n\nTips:\n1. Pastikan API Key yang Anda masukkan saat login sudah benar.\n2. Jika Anda menyalin kunci baru, pastikan tidak ada spasi/karakter terpotong.`);
             }
         });
     </script>
