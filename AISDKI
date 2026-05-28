@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareDiagnose AI - SDKI, SLKI, SIKI & ICD-10</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #091e3a 0%, #2f80ed 50%, #2d9ee0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <div id="login-section" class="w-full max-w-md p-8 rounded-2xl glassmorphism shadow-2xl text-white">
+        <div class="text-center mb-8">
+            <i class="fa-solid fa-user-md text-5xl mb-3 text-cyan-300 animate-pulse"></i>
+            <h1 class="text-3xl font-bold tracking-wide">CareDiagnose AI</h1>
+            <p class="text-sm text-gray-300 mt-2">Sistem Keputusan Klinis Berbasis SDKI, SLKI, SIKI & ICD-10</p>
+        </div>
+        
+        <form id="login-form" class="space-y-5">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider mb-2">Username</label>
+                <input type="text" id="username" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-cyan-400 text-white placeholder-white/40" placeholder="Masukkan username anda">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider mb-2">Password</label>
+                <input type="password" id="password" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-cyan-400 text-white placeholder-white/40" placeholder="••••••••">
+            </div>
+            <button type="submit" class="w-full py-3 bg-gradient-to-r text-sm font-bold from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-lg shadow-lg transform active:scale-95 transition">
+                MASUK KE SISTEM
+            </button>
+        </form>
+
+        <div class="mt-6 text-center border-t border-white/10 pt-4">
+            <p class="text-xs text-gray-300">Belum punya akun / lupa password?</p>
+            <a href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20ingin%20meminta%20akses%20login%20Web%20CareDiagnose%20AI" target="_blank" class="inline-block mt-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-300 text-xs font-bold rounded-full transition border border-green-500/30">
+                <i class="fa-brands fa-whatsapp mr-1"></i> Hubungi Admin via WA
+            </a>
+        </div>
+    </div>
+
+    <div id="dashboard-section" class="w-full max-w-5xl p-6 rounded-2xl glassmorphism shadow-2xl text-white hidden">
+        <div class="flex flex-col md:flex-row justify-between items-center border-b border-white/10 pb-4 mb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-laptop-medical text-3xl text-cyan-300"></i>
+                <div>
+                    <h2 class="text-2xl font-bold">Dashboard Analisis Klinis</h2>
+                    <p class="text-xs text-gray-300">Gunakan bahasa medis, Indonesia, atau asing untuk menganalisis gejala.</p>
+                </div>
+            </div>
+            <button id="logout-btn" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/40 text-red-300 text-xs font-bold rounded-lg transition border border-red-500/30">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
+            </button>
+        </div>
+
+        <div class="bg-white/5 p-5 rounded-xl border border-white/10 mb-6">
+            <label class="block text-sm font-semibold text-cyan-300 mb-2">
+                <i class="fa-solid fa-search mr-1"></i> Input Tanda & Gejala (Minimal 2 Kriteria Mayor/Minor):
+            </label>
+            <div class="flex flex-col md:flex-row gap-3">
+                <input type="text" id="search-input" class="flex-1 px-4 py-3 bg-black/20 border border-white/20 rounded-lg focus:outline-none focus:border-cyan-400 text-white placeholder-white/40 text-sm" 
+                    placeholder="Contoh: Sesak napas saat beraktivitas, batuk tidak efektif, ronkhi (+), ortopnea...">
+                <button id="search-btn" class="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-lg transition shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-brain"></i> Analisis AI
+                </button>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-2 italic">*AI Gemini V1 akan menganalisis secara mendalam kecocokan data dengan database SDKI.</p>
+        </div>
+
+        <div id="loading" class="hidden text-center py-12">
+            <i class="fa-solid fa-circle-notch animate-spin text-5xl text-cyan-300 mb-3"></i>
+            <p class="text-sm tracking-wide text-cyan-200">Gemini AI sedang menganalisis gejala & mencocokkan buku 3S...</p>
+        </div>
+
+        <div id="result-section" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 shadow-inner">
+                    <h3 class="text-lg font-bold text-emerald-300 border-b border-emerald-500/20 pb-2 mb-3">
+                        <span class="bg-emerald-500 text-black px-2 py-0.5 rounded text-xs font-black mr-2">1</span> DIAGNOSA SDKI
+                    </h3>
+                    <div id="sdki-result" class="text-sm leading-relaxed whitespace-pre-line text-gray-200"></div>
+                </div>
+
+                <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5 shadow-inner">
+                    <h3 class="text-lg font-bold text-blue-300 border-b border-blue-500/20 pb-2 mb-3">
+                        <span class="bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-black mr-2">2</span> LUARAN SLKI
+                    </h3>
+                    <div id="slki-result" class="text-sm leading-relaxed whitespace-pre-line text-gray-200"></div>
+                </div>
+
+                <div class="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5 shadow-inner">
+                    <h3 class="text-lg font-bold text-purple-300 border-b border-purple-500/20 pb-2 mb-3">
+                        <span class="bg-purple-500 text-white px-2 py-0.5 rounded text-xs font-black mr-2">3</span> INTERVENSI SIKI
+                    </h3>
+                    <div id="siki-result" class="text-sm leading-relaxed whitespace-pre-line text-gray-200"></div>
+                </div>
+            </div>
+
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 shadow-md">
+                <h3 class="text-lg font-bold text-amber-300 border-b border-amber-500/20 pb-2 mb-3">
+                    <i class="fa-solid fa-stethoscope mr-2"></i>DIAGNOSA MEDIS KORELATIF (ICD-10)
+                </h3>
+                <div id="icd10-result" class="text-sm leading-relaxed whitespace-pre-line text-gray-200"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI SISTEM ---
+        // 1. Akun Login Sederhana (Daftar Akun yang Diizinkan Masuk)
+        const KREDENSI_USER = {
+            "adminperawat": "sdki2026",
+            "mahasiswa": "suksesners"
+        };
+
+        // 2. TOKEN API KEY GOOGLE GEMINI V1
+        // Dikosongkan agar aman dari sistem deteksi rahasia GitHub (Secret Scanning)
+        let GEMINI_API_KEY = ""; 
+
+        // --- MANIPULASI DOM ---
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const loginForm = document.getElementById('login-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('result-section');
+        
+        const sdkiResult = document.getElementById('sdki-result');
+        const slkiResult = document.getElementById('slki-result');
+        const sikiResult = document.getElementById('siki-result');
+        const icd10Result = document.getElementById('icd10-result');
+
+        // --- FITUR LOGIN ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = usernameInput.value.trim();
+            const pass = passwordInput.value.trim();
+
+            if (KREDENSI_USER[user] && KREDENSI_USER[user] === pass) {
+                
+                // POP-UP MEMINTA API KEY KEPADA USER SECARA DINAMIS
+                const inputKey = prompt("Masukkan API Key Google Gemini Anda untuk mengaktifkan AI:");
+                
+                if (!inputKey || inputKey.trim() === "") {
+                    alert("Gagal Masuk: API Key wajib diisi untuk menggunakan fitur Analisis AI.");
+                    return;
+                }
+                
+                // Menyimpan API Key sementara di memori halaman browser
+                GEMINI_API_KEY = inputKey.trim();
+                
+                loginSection.classList.add('hidden');
+                dashboardSection.classList.remove('hidden');
+                alert('Login Berhasil! Selamat Datang di CareDiagnose AI.');
+            } else {
+                alert('Username atau Password salah! Silahkan hubungi admin via WA.');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            dashboardSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            loginForm.reset();
+            resultSection.classList.add('hidden');
+            searchInput.value = '';
+            GEMINI_API_KEY = ""; // Hapus token dari memori demi keamanan saat logout
+        });
+
+        // --- FITUR HIT PENCARIAN AI GEMINI (VERSI PERBAIKAN & ANTI-ERROR) ---
+        searchBtn.addEventListener('click', async () => {
+            const queryText = searchInput.value.trim();
+            
+            if (queryText === "") {
+                alert("Mohon masukkan data gejala terlebih dahulu.");
+                return;
+            }
+
+            // Menampilkan loading screen
+            loading.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+
+            const promptKlinis = `
+                Anda adalah sistem pakar kecerdasan buatan untuk keperawatan di Indonesia yang sangat ahli dalam buku Standar Diagnosis Keperawatan Indonesia (SDKI), Standar Luaran Keperawatan Indonesia (SLKI), dan Standar Intervensi Keperawatan Indonesia (SIKI) serta ICD-10.
+                
+                Tugas Anda adalah menganalisis teks input gejala berikut: "${queryText}". Teks ini bisa berupa bahasa medis, bahasa awam, ataupun bahasa asing. Terjemahkan dan analisis secara mendalam terlebih dahulu.
+                
+                PENTING: Validasi apakah input tersebut mengandung minimal 2 atau lebih kriteria batasan mayor atau minor dari suatu diagnosis keperawatan.
+                
+                Berikan output dalam struktur format JSON kaku seperti di bawah ini. Jangan berikan teks pembuka atau penutup apapun. Cukup struktur JSON ini saja:
+                
+                {
+                  "sdki": "Nama Diagnosis (Kode SDKI)\\n\\nDefinisi:\\n[Isi definisi]\\n\\nTanda & Gejala Terdeteksi:\\n[Sebutkan gejala yang cocok dari input]",
+                  "slki": "Luaran Utama:\\n[Nama Luaran & Kode]\\n\\nKriteria Hasil:\\n- [Kriteria 1]\\n- [Kriteria 2]",
+                  "siki": "Intervensi Utama:\\n[Nama Intervensi & Kode]\\n\\nAktivitas Observasi:\\n- [Aktivitas]\\n\\nAktivitas Terapeutik:\\n- [Aktivitas]\\n\\nAktivitas Edukasi:\\n- [Aktivitas]",
+                  "icd15": "Diagnosis Medis Terkait:\\n[Nama Penyakit Medis & Kode ICD-10 yang paling berkorelasi dengan tanda gejala mayor tersebut]"
+                }
+            `;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptKlinis }] }]
+                    })
+                });
+
+                // Cek jika respon dari Google error (misal API Key dinonaktifkan/salah ketik)
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Google API Error: ${errorData.error.message}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                    throw new Error("Gemini tidak mengembalikan hasil analisis. Coba ubah susunan kalimat gejala.");
+                }
+
+                let rawText = data.candidates[0].content.parts[0].text;
+                
+                // Pembersihan super aman untuk format JSON dari AI
+                rawText = rawText.replace(/```json/gi, "")
+                                 .replace(/```/g, "")
+                                 .replace(/^\s+|\s+$/g, ""); // Potong spasi di awal/akhir
+                
+                // Coba parsing ke objek JSON
+                const cleanJson = JSON.parse(rawText);
+
+                // Mengisi data ke HTML jika sukses
+                sdkiResult.innerText = cleanJson.sdki;
+                slkiResult.innerText = cleanJson.slki;
+                sikiResult.innerText = cleanJson.siki;
+                icd10Result.innerText = cleanJson.icd15;
+
+                loading.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                loading.classList.add('hidden');
+                
+                // Menampilkan pesan error spesifik agar tahu letak kesalahannya
+                alert(`Terjadi Kendala Sistem:\n${error.message}\n\nTips:\n1. Pastikan API Key yang Anda masukkan saat login sudah benar.\n2. Jika Anda menyalin kunci baru, pastikan tidak ada spasi/karakter terpotong.`);
+            }
+        });
+    </script>
+</body>
+</html>
