@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDKI & ICD-10 — Sistem Diagnosa Keperawatan Pintar</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-200: #5DCAA5;
+    --teal-400: #1D9E75; --teal-600: #0F6E56; --teal-800: #085041; --teal-900: #04342C;
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-200: #85B7EB;
+    --blue-400: #378ADD; --blue-600: #185FA5; --blue-800: #0C447C; --blue-900: #042C53;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-200: #EF9F27;
+    --amber-400: #BA7517; --amber-600: #854F0B; --amber-800: #633806; --amber-900: #412402;
+    --coral-50: #FAECE7; --coral-100: #F5C4B3; --coral-200: #F0997B;
+    --coral-400: #D85A30; --coral-600: #993C1D; --coral-800: #712B13; --coral-900: #4A1B0C;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-200: #B4B2A9;
+    --gray-400: #888780; --gray-600: #5F5E5A; --gray-800: #444441; --gray-900: #2C2C2A;
+    --green-50: #EAF3DE; --green-100: #C0DD97; --green-200: #97C459;
+    --green-400: #639922; --green-600: #3B6D11; --green-800: #27500A; --green-900: #173404;
+    --bg: #F7F6F1; --surface: #FFFFFF; --text-primary: #1a1a18; --text-secondary: #5F5E5A;
+    --text-muted: #888780; --border: rgba(0,0,0,0.1); --border-strong: rgba(0,0,0,0.18);
+    --radius: 12px; --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; font-size: 15px; }
+
+  header { background: var(--teal-600); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 20px; height: 20px; fill: white; }
+  .logo-text { color: white; font-weight: 600; font-size: 16px; letter-spacing: -0.3px; }
+  .logo-sub { color: rgba(255,255,255,0.65); font-size: 12px; font-weight: 400; }
+  
+  .header-badge { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 12px; color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 500; }
+  .header-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #5df2b8; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  .hero { text-align: center; margin-bottom: 2.5rem; }
+  .hero h1 { font-family: 'DM Serif Display', serif; font-size: 2.8rem; color: var(--teal-800); line-height: 1.15; margin-bottom: 0.75rem; }
+  .hero p { color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+  /* API KEY CARD */
+  .api-card { background: #fff5e6; border: 1px solid var(--amber-200); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 8px; }
+  .api-title { font-size: 13px; font-weight: 700; color: var(--amber-800); text-transform: uppercase; }
+  .api-input-wrapper { display: flex; gap: 10px; }
+  .api-input-wrapper input { flex: 1; padding: 0.6rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--amber-400); font-size: 14px; }
+
+  .search-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+  .search-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .input-wrapper { display: flex; gap: 10px; align-items: flex-end; }
+  #symptom-input { flex: 1; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-primary); resize: vertical; min-height: 90px; line-height: 1.5; outline: none; }
+  #symptom-input:focus { border-color: var(--teal-400); }
+
+  .btn-diagnose { background: var(--teal-600); color: white; border: none; border-radius: var(--radius); padding: 0.9rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; height: fit-content; min-width: 150px; justify-content: center; }
+  .btn-diagnose:hover { background: var(--teal-800); }
+  .btn-diagnose:disabled { background: var(--gray-200); cursor: not-allowed; }
+
+  .search-hint { margin-top: 0.75rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
+  .chip { display: inline-block; background: var(--teal-50); color: var(--teal-800); border: 1px solid var(--teal-100); border-radius: 20px; padding: 3px 10px; cursor: pointer; }
+  .chip:hover { background: var(--teal-100); }
+
+  #loading { display: none; text-align: center; padding: 3rem 1rem; }
+  .loader { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1rem; }
+  .loader-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal-400); animation: bounce 1.4s infinite ease-in-out; }
+  .loader-dot:nth-child(2) { animation-delay: 0.16s; }
+  .loader-dot:nth-child(3) { animation-delay: 0.32s; }
+  @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+  
+  #results { display: none; }
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .result-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--teal-800); }
+  .btn-reset { background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 6px 14px; cursor: pointer; color: var(--text-secondary); font-size: 13px; }
+
+  .diagnosis-card { background: var(--surface); border: 1.5px solid var(--teal-200); border-radius: 16px; overflow: hidden; margin-bottom: 1.25rem; box-shadow: 0 4px 24px rgba(15,110,86,0.08); }
+  .diagnosis-header { background: linear-gradient(135deg, var(--teal-600) 0%, var(--teal-800) 100%); padding: 1.25rem 1.5rem; color: white; }
+  .diagnosis-name { font-family: 'DM Serif Display', serif; font-size: 1.4rem; line-height: 1.2; }
+  .diagnosis-code { display: inline-block; background: rgba(255,255,255,0.15); color: white; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 4px; margin-top: 6px; }
+
+  /* ICD-10 BOX STYLE */
+  .icd-box { background: rgba(255,255,255,0.12); border: 1px dashed rgba(255,255,255,0.3); padding: 8px 12px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: #fff; }
+
+  .diagnosis-body { padding: 1.5rem; }
+  .confidence-bar-wrap { margin-bottom: 1.5rem; }
+  .confidence-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+  .confidence-bar { height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
+  .confidence-fill { height: 100%; background: var(--teal-400); width: 0%; transition: width 1s ease; }
+
+  .criteria-section { margin-bottom: 1.5rem; }
+  .criteria-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.75rem; display: flex; justify-content: space-between; }
+  .criteria-title.mayor { color: var(--coral-600); }
+  .criteria-title.minor { color: var(--amber-600); }
+  
+  .criteria-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .criteria-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 14px; }
+  .criteria-item.matched { background: var(--green-50); border: 1px solid var(--green-100); }
+  .criteria-item.unmatched { background: var(--gray-50); border: 1px solid var(--border); color: var(--text-muted); }
+  
+  .check-icon { font-weight: bold; margin-right: 4px; }
+  .matched .check-icon { color: var(--green-600); }
+  .unmatched .check-icon { color: var(--gray-400); }
+
+  .box-info { padding: 1rem 1.25rem; border-radius: 8px; margin-top: 1rem; font-size: 14px; line-height: 1.5; }
+  .box-info.rasional { background: var(--teal-50); border: 1px solid var(--teal-100); color: var(--teal-800); }
+  .box-info.missing { background: var(--blue-50); border: 1px solid var(--blue-100); color: var(--blue-800); }
+  .box-info.goals { background: var(--green-50); border: 1px solid var(--green-100); color: var(--green-800); }
+  .box-title { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+
+  .recom-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-top: 1.25rem; }
+  .recom-title { font-size: 14px; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .recom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 600px) { .recom-grid { grid-template-columns: 1fr; } }
+  .recom-item { background: var(--amber-50); border: 1px solid var(--amber-100); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--amber-800); display: flex; gap: 8px; line-height: 1.4; }
+  .recom-num { width: 20px; height: 20px; border-radius: 50%; background: var(--amber-200); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .other-section { margin-top: 1.5rem; }
+  .other-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.5rem; }
+  .other-card { background: white; border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-size: 13px; width: 100%; }
+
+  #error-box { display: none; background: #FFF5F5; border: 1px solid #FED7D7; border-radius: var(--radius); padding: 1rem 1.25rem; color: #9B2C2C; font-size: 14px; margin-bottom: 1rem; }
+  .disclaimer { background: var(--amber-50); border: 1px solid var(--amber-100); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 12px; color: var(--amber-800); margin-top: 1.5rem; line-height: 1.5; }
+  footer { text-align: center; padding: 2rem 1.5rem; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 2rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">SDKI & ICD-10 Cerdas</div>
+      <div class="logo-sub">Sistem Pemetaan Pakar Keperawatan & Medis</div>
+    </div>
+  </div>
+  <div class="header-badge"><div class="dot"></div> Multilingual Gemini AI v2</div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Diagnosa SDKI Komprehensif & ICD-10</h1>
+    <p>Masukkan asesmen klinis dalam bentuk bebas (Bahasa Indonesia, Inggris, Medis/Latin, atau Singkatan). AI akan otomatis menerjemahkan terminologi, memetakan ke <strong>seluruh database SDKI</strong>, dan memberikan rujukan silang kode medis ICD-10.</p>
+  </div>
+
+  <div class="api-card">
+    <div class="api-title">🔑 Konfigurasi API Key Gemini</div>
+    <div class="api-input-wrapper">
+      <input type="password" id="api-key" placeholder="Masukkan Gemini API Key Anda disini..." />
+    </div>
+    <span style="font-size:11px; color: var(--text-secondary);">Mendukung pemrosesan data lokal langsung ke server Google Gemini. Kunci Anda tidak disimpan di server luar.</span>
+  </div>
+
+  <div class="search-card">
+    <div class="search-label">Data Pengkajian Klinis Pasien (Bilingual / Latin Bebas)</div>
+    <div class="input-wrapper">
+      <textarea id="symptom-input" placeholder="Contoh: SOB, wheezing, Rhonchi, RR 29x/m, history of Asthma attack atau 'apnea dan sianosis berulang'"></textarea>
+      <button class="btn-diagnose" onclick="diagnose()">
+        🚀 Analisa Pakar
+      </button>
+    </div>
+    <div class="search-hint">
+      <span>Uji coba cepat:</span>
+      <span class="chip" onclick="fillExample('SOB')">SOB / Wheezing (English Medical)</span>
+      <span class="chip" onclick="fillExample('Apnea')">Apnea & Bradycardia (Latin Term)</span>
+      <span class="chip" onclick="fillExample('ChestPain')">Chest Pain ACS (Campuran)</span>
+    </div>
+  </div>
+
+  <div id="error-box"></div>
+  
+  <div id="loading">
+    <div class="loader"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div></div>
+    <div class="loading-text" style="font-weight: 600;">Gemini Medical Translator & Engine sedang bekerja...</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Menerjemahkan bahasa baku, mencocokkan kriteria Mayor/Minor SDKI, & menentukan kode ICD-10 terkait.</div>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="disclaimer">
+    <strong>Pemberitahuan Klinis:</strong> Sistem ini memanfaatkan LLM Medis untuk pemetaan awal SDKI dan ICD-10. Penegakan diagnosa definitif dan intervensi mandiri tetap sepenuhnya berada di bawah otoritas klinis Perawat Berlisensi dan Dokter.
+  </div>
+</main>
+
+<footer>
+  Sistem Diagnosa SDKI PPNI Terintegrasi ICD-10 · Didukung Google Gemini API
+</footer>
+
+<script>
+const EXAMPLES = {
+  'SOB': 'Patient complains of severe shortness of breath (SOB), audible wheezing on expiration, use of accessory muscles, respiratory rate 28 bpm, history of chronic asthma.',
+  'Apnea': 'Bayi mengalami henti napas berulang (apnea) lebih dari 20 detik, HR dropping to 90 bpm (bradycardia), kulit tampak kebiruan (cyanosis) pada area perioral, SpO2 84% dengan room air.',
+  'ChestPain': 'Klien mengeluh acute chest pain skala 8 menyebar ke lengan kiri, diaphoresis (+), wajah meringis kesakitan, hasil EKG menunjukkan ST-segment elevation (STEMI). Nadi 112 bpm, TD 150/90 mmHg.'
+};
+
+function fillExample(key) {
+  document.getElementById('symptom-input').value = EXAMPLES[key];
+  document.getElementById('symptom-input').focus();
+}
+
+const GENERAL_SDKI_SYSTEM_PROMPT = `Anda adalah sistem kecerdasan buatan medis termaju yang bertindak sebagai ahli rekam medis dan penegak diagnosa keperawatan berdasarkan Standar Diagnosa Keperawatan Indonesia (SDKI) PPNI yang diselaraskan dengan diagnosa medis internasional ICD-10.
+
+KEMAMPUAN BAHASA & MEDIS:
+1. Anda wajib menerjemahkan input data pengkajian dari berbagai bahasa (English, Bahasa Indonesia, campuran, slang medis seperti 'SOB', 'BP', 'HR', 'apneu', 'mengi') ke dalam pemahaman istilah klinis baku.
+2. Petakan tanda dan gejala tersebut ke kriteria MAYOR dan MINOR pada seluruh khazanah buku SDKI PPNI (tanpa terkecuali, mencakup kategori Fisiologis, Psikologis, Perilaku, Relasional, dan Lingkungan).
+
+STRUKTUR UTAMA ICD-10:
+Untuk setiap diagnosa keperawatan utama dan diferensial yang Anda pilih, berikan diagnosa medis pendukung yang paling relevan berserta kode ICD-10 aslinya (misal: Asma Bronkial [J45], Infark Miokard Akut [I21], Diabetes Melitus Tipe 2 [E11]).
+
+Anda harus mengembalikan respons HANYA dalam format JSON dengan struktur persis seperti berikut (jangan menyelipkan teks pembuka atau penutup di luar JSON agar sistem tidak error):
+
+{
+  "primary_diagnosis": {
+    "name": "Nama Diagnosa SDKI Terpilih (Bahasa Indonesia Baku)",
+    "code": "Kode SDKI (Contoh: D.0005)",
+    "category": "Kategori & Subkategori SDKI",
+    "confidence": 95,
+    "related_icd10": "Nama Diagnosa Medis Terkait [Kode ICD-10] - Contoh: Asma Akut [J45.9]",
+    "matched_mayor": ["Daftar kriteria mayor yang ditemukan cocok dari teks input"],
+    "unmatched_mayor": ["Daftar kriteria mayor wajib menurut SDKI yang tidak ditemukan pada input"],
+    "matched_minor": ["Daftar kriteria minor pendukung yang ditemukan cocok"],
+    "unmatched_minor": ["Daftar kriteria minor pendukung menurut SDKI yang tidak ditemukan"],
+    "rationale": "Rasionalisasi klinis mengapa diagnosa keperawatan ini tegak dan apa hubungannya dengan kondisi medis pasien (ICD-10) tersebut.",
+    "nursing_goals": ["Tujuan & Kriteria Hasil Keperawatan berdasarkan SLKI"],
+    "interventions": ["Intervensi Utama & Pendukung Berdasarkan SIKI (minimal 4 intervensi)"]
+  },
+  "other_possible": [
+    {
+      "name": "Nama Diagnosa SDKI Alternatif/Sekunder",
+      "code": "Kode SDKI",
+      "related_icd10": "Diagnosa Medis Pendukung [Kode ICD-10]",
+      "reason": "Alasan mengapa diagnosa ini juga berpotensi terjadi."
+    }
+  ],
+  "missing_data": ["Data laboratorium, tanda-tanda vital, atau hasil asesmen fisik spesifik yang sebaiknya diperiksa kembali untuk lebih mengonfirmasi diagnosa ini"]
+}`;
+
+async function diagnose() {
+  const input = document.getElementById('symptom-input').value.trim();
+  const apiKey = document.getElementById('api-key').value.trim();
+
+  if (!apiKey) {
+    showError('Mohon masukkan API Key Gemini Anda untuk memproses data secara aman.');
+    return;
+  }
+  if (!input) {
+    showError('Mohon masukkan data pengkajian klinis pasien terlebih dahulu.');
+    return;
+  }
+
+  const btn = document.querySelector('.btn-diagnose');
+  btn.disabled = true;
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+
+  try {
+    // Menggunakan endpoint resmi Google Gemini API (Model v1.5 Flash yang cepat dan andal untuk teks klinis)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `${GENERAL_SDKI_SYSTEM_PROMPT}\n\nDATA PENGKAJIAN PASIEN SEKARANG:\n"${input}"\n\nBerikan analisa berbasis SDKI dan rujukan ICD-10 dalam bentuk JSON murni.`
+          }]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `HTTP Error ${response.status}`);
+    }
+
+    const resData = await response.json();
+    let rawText = resData.candidates[0].content.parts[0].text;
+    
+    // Pembersihan jika model masih menyelipkan markdown block code
+    rawText = rawText.replace(/```json|```/g, '').trim();
+    
+    const result = JSON.parse(rawText);
+    renderResults(result);
+
+  } catch (err) {
+    showError(`Terjadi kesalahan analisa: ${err.message}. Pastikan API Key valid dan koneksi internet Anda lancar.`);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderResults(data) {
+  const p = data.primary_diagnosis;
+  const confidence = Math.min(100, Math.max(0, p.confidence));
+
+  const buildList = (list, className, icon) => {
+    if (!list || list.length === 0) return `<li class="criteria-item ${className}">-</li>`;
+    return list.map(item => `
+      <li class="criteria-item ${className}">
+        <span class="check-icon">${icon}</span> <span>${item}</span>
+      </li>`).join('');
+  };
+
+  const otherDxHtml = (data.other_possible || []).map(dx => `
+    <div class="other-card">
+      <strong>${dx.name} (${dx.code || 'SDKI'})</strong><br>
+      <span style="color: var(--coral-600); font-size:12px;">Korelasi Medis: ${dx.related_icd10 || 'Tidak Terdeteksi'}</span><br>
+      <span style="color: var(--text-secondary); font-size:12.5px;">${dx.reason}</span>
+    </div>`).join('');
+
+  const interventionsHtml = (p.interventions || []).map((iv, i) => `
+    <div class="recom-item">
+      <div class="recom-num">${i + 1}</div>
+      <span>${iv}</span>
+    </div>`).join('');
+
+  const html = `
+    <div class="result-header">
+      <div class="result-title">Hasil Analisis Klinis Komprehensif</div>
+      <button class="btn-reset" onclick="resetForm()">← Diagnosa Baru</button>
+    </div>
+
+    <div class="diagnosis-card">
+      <div class="diagnosis-header">
+        <div>
+          <div class="diagnosis-name">${p.name}</div>
+          <div class="diagnosis-code">${p.code || 'SDKI'} &nbsp;·&nbsp; ${p.category || 'Kategori N/A'}</div>
+          <div class="icd-box">
+            <strong>🔗 Diagnosa Medis Terkait (ICD-10):</strong> ${p.related_icd10 || 'Tidak ditentukan'}
+          </div>
+        </div>
+      </div>
+
+      <div class="diagnosis-body">
+        <div class="confidence-bar-wrap">
+          <div class="confidence-label">
+            <span>Tingkat Kecocokan Klinis AI</span>
+            <strong>${confidence}%</strong>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill" style="width:${confidence}%"></div>
+          </div>
+        </div>
+
+        <div class="criteria-section">
+          <div class="criteria-title mayor"><span>Kriteria Mayor Terdeteksi</span><span>Status SDKI</span></div>
+          <ul class="criteria-list">
+            ${buildList(p.matched_mayor, 'matched', '✓')}
+            ${buildList(p.unmatched_mayor, 'unmatched', '✗')}
+          </ul>
+        </div>
+
+        <div class="criteria-section">
+          <div class="criteria-title minor"><span>Kriteria Minor / Pendukung</span><span>Status SDKI</span></div>
+          <ul class="criteria-list">
+            ${buildList(p.matched_minor, 'matched', '✓')}
+            ${buildList(p.unmatched_minor, 'unmatched', '✗')}
+          </ul>
+        </div>
+
+        <div class="box-info rasional">
+          <div class="box-title">💡 Rasionalisasi Klinis & Patofisiologi</div>
+          ${p.rationale || ''}
+        </div>
+
+        ${data.missing_data && data.missing_data.length > 0 ? `
+        <div class="box-info missing">
+          <div class="box-title">🔍 Data Pengkajian Tambahan yang Direkomendasikan</div>
+          <ul style="padding-left:15px;">${data.missing_data.map(m => `<li>${m}</li>`).join('')}</ul>
+        </div>` : ''}
+
+        <div class="box-info goals">
+          <div class="box-title">🎯 Target & Kriteria Hasil (SLKI)</div>
+          <ul style="padding-left:15px;">${(p.nursing_goals || []).map(g => `<li>${g}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="recom-section">
+      <div class="recom-title">📋 Rekomendasi Intervensi Keperawatan (SIKI)</div>
+      <div class="recom-grid">${interventionsHtml}</div>
+    </div>
+
+    ${otherDxHtml ? `
+    <div class="other-section">
+      <div style="font-size:14px; font-weight:600; color:var(--text-secondary); margin-bottom:8px;">⚖️ Diagnosa Diferensial / Masalah Kolaboratif Lain:</div>
+      <div class="other-grid">${otherDxHtml}</div>
+    </div>` : ''}
+  `;
+
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = html;
+  resultsEl.style.display = 'block';
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetForm() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('symptom-input').value = '';
+  document.getElementById('symptom-input').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
